@@ -5,11 +5,13 @@
  *
  */  
 
+function headless_project_style() {
+    wp_enqueue_style( 'parent-style', get_template_directory_uri() . '/style.css' );
+    wp_enqueue_style( 'child-style', get_stylesheet_directory_uri() . '/style.css', array('parent-style') );
+}
 add_action( 'wp_enqueue_scripts', 'headless_project_style' );
-				function headless_project_style() {
-					wp_enqueue_style( 'parent-style', get_template_directory_uri() . '/style.css' );
-					wp_enqueue_style( 'child-style', get_stylesheet_directory_uri() . '/style.css', array('parent-style') );
-				}
+
+
 
 /**
  * User Registeration endpoint
@@ -56,3 +58,32 @@ function hp_custom_user_registration($request) {
 }
 
 
+
+
+
+// Block unauthenticated access to posts endpoints only
+add_filter('rest_authentication_errors', function ($result) {
+    // Get current route
+    $route = $GLOBALS['wp']->query_vars['rest_route'] ?? '';
+    
+    // Check if this is a posts-related endpoint
+    if (strpos($route, '/wp/v2/posts') === 0) {
+        if (!is_user_logged_in()) {
+            return new WP_Error(
+                'rest_forbidden',
+                'You must be authenticated to access this endpoint.',
+                ['status' => 401]
+            );
+        }
+    }
+    
+    return $result;
+});
+
+// Filter posts: show only own posts unless admin
+add_filter('rest_post_query', function ($args, $request) {
+    if (is_user_logged_in() && !current_user_can('administrator')) {
+        $args['author'] = get_current_user_id();
+    }
+    return $args;
+}, 10, 2);

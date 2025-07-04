@@ -18,10 +18,10 @@ A custom WordPress setup running on Ubuntu with Apache.
 
 ## Docker
     - Export Database:
-        - `sudo mysqldump -u root -p wordpress > wordpress.sql`
+        - sudo mysqldump -u root -p wordpress > wordpress.sql
     - Import database into docker container
-        - `docker cp wordpress.sql ai-project-db-1:/wordpress.sql`
+        - docker cp wordpress.sql wordpress-db-1:/wordpress.sql
     - Enter the DB Container
-        - `docker exec -it ai-project-db-1 bash`
+        - docker exec -it wordpress-db-1 bash
     - Import SQL File Into wordpress Database
-        - `mysql -u wpuser -p wordpress < /wordpress.sql`
+        - mysql -u wpuser -p wordpress < /wordpress.sql

@@ -64,7 +64,18 @@ mysql -u wpuser -p wordpress < /wordpress.sql
 
 ---
 
-## 🐳 Docker Commands
+## 📂 Project Structure Example
+
+```
+.
+├── backend/              # WordPress-related files (themes, plugins, config)
+├── frontend/             # React app
+├── wordpress.sql         # Exported WordPress DB
+├── docker-compose.yml    # Docker configuration
+└── README.md             # You're reading it!
+```
+
+## 🐳 Docker Manual Commands
 
 ### 📤 Export WordPress Database
 
@@ -93,14 +104,3 @@ mysql -u wpuser -p wordpress < /wordpress.sql
 - The React app communicates with WordPress via REST API.
 
 ---
-
-## 📂 Project Structure Example
-
-```
-.
-├── backend/              # WordPress-related files (themes, plugins, config)
-├── frontend/             # React app
-├── wordpress.sql         # Exported WordPress DB
-├── docker-compose.yml    # Docker configuration
-└── README.md             # You're reading it!
-```

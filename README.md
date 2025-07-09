@@ -18,8 +18,8 @@ This is a local development environment running a custom WordPress setup (as a h
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/ckrizwan/wordpress.git
-cd wordpress
+git clone https://github.com/ckrizwan/wp-react-project.git
+cd wp-react-project
 ```
 
 ---

@@ -12,7 +12,26 @@ services:
       - ./ai-wp:/var/www/html
     depends_on:
       - db
+    networks: # Explicitly add to a network
+      - app_network
 
+  # --- Custom PHP Backend (Middleware) ---
+  php_backend:
+    build:
+      context: ./php-backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./php-backend:/var/www/html
+    ports: # EXPOSE port 9000 to the host for direct access from React.
+      - "9000:9000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - WP_MCP_URL=http://wordpress:80/wp-json/wp/v2/wpmcp
+      - WP_MCP_JWT_TOKEN=${WP_MCP_JWT_TOKEN}
+    depends_on:
+      - wordpress
+    networks:
+      - app_network
   db:
     image: mariadb:10.6
     environment:
@@ -22,6 +41,8 @@ services:
       MYSQL_PASSWORD: Wp@12345!
     volumes:
       - db_data:/var/lib/mysql
+    networks:
+      - app_network
 
   react-app:
     build:
@@ -30,6 +51,12 @@ services:
       - "3000:80"
     depends_on:
       - wordpress
+    networks:
+      - app_network
+
+networks: # Define the custom network
+  app_network:
+    driver: bridge
 
 volumes:
   db_data: 

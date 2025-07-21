@@ -166,17 +166,20 @@ const Spinner = () => (<svg
           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
 </svg>);
 
+// apikey: AIzaSyDeuUWYBVJ8AVfZ9cGELORQKYI3ATSF7UU
+// pass: boSD dZg8 kTMY 1gjt BRhf rEP5
+
 function App() {
-    const [apiKey, setApiKey] = useState('');
+    const [apiKey, setApiKey] = useState(process.env.REACT_APP_GEMINI_API_KEY);
     const [prompt, setPrompt] = useState('The future of renewable energy');
     const [context, setContext] = useState('Write a short, optimistic blog post about recent breakthroughs in solar and wind power technology. Mention how these advancements can help combat climate change. The tone should be accessible to a general audience.');
     const [generatedContent, setGeneratedContent] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [isWpModalOpen, setIsWpModalOpen] = useState(false);
-    const [wordpressUrl, setWordpressUrl] = useState('');
+    const [wordpressUrl, setWordpressUrl] = useState(process.env.REACT_APP_WORDPRESS_URL);
     const [wordpressUser, setWordpressUser] = useState('');
-    const [wordpressAppPass, setWordpressAppPass] = useState('');
+    const [wordpressAppPass, setWordpressAppPass] = useState(process.env.REACT_APP_WORDPRESS_PASSWORD);
     const [isPushing, setIsPushing] = useState(false);
     const [pushMessage, setPushMessage] = useState(null);
 
@@ -226,24 +229,63 @@ function App() {
         e.preventDefault();
         setIsPushing(true);
         setPushMessage(null);
-        await new Promise(resolve => setTimeout(resolve, 2000));
 
-        if (wordpressUrl && wordpressUser && wordpressAppPass) {
-            console.log('Simulating push to WordPress:', {
-                url: wordpressUrl,
-                user: wordpressUser,
-                content: generatedContent.substring(0, 100) + '...'
-            });
-            setPushMessage({type: 'success', text: 'Successfully pushed to WordPress!'});
+        await new Promise(resolve => setTimeout(resolve, 2000)); 
+
+        let postSuccess = false;
+
+        if (wordpressUrl && wordpressUser && wordpressAppPass && prompt && generatedContent) {
+            const postUrl = `${wordpressUrl}/wp-json/wp/v2/posts`;
+
+            const postData = {
+                title: prompt,
+                content: generatedContent,
+                status: 'publish' 
+            };
+
+            const authToken = btoa(`${wordpressUser}:${wordpressAppPass}`); // Basic Auth
+
+            try {
+                const response = await fetch(postUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Basic ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(postData)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Post created:', data);
+                    setPushMessage({ type: 'success', text: 'Successfully pushed to WordPress!' });
+                    postSuccess = true;
+                } else {
+                    const error = await response.json();
+                    console.error('❌ WordPress API error:', error);
+                    setPushMessage({ type: 'error', text: error.message || 'Failed to push to WordPress.' });
+                }
+            } catch (err) {
+                console.error('❌ Network error:', err);
+                setPushMessage({ type: 'error', text: 'Network error. Please check the console.' });
+            }
         } else {
-            setPushMessage({type: 'error', text: 'Please fill in all WordPress details.'});
+            setPushMessage({ type: 'error', text: 'Please fill in all WordPress details.' });
         }
 
         setIsPushing(false);
-        setTimeout(() => {
-            setIsWpModalOpen(false);
-            setPushMessage(null);
-        }, 3000);
+        
+        // ✅ Only close modal and reset form if post was successful
+        if (postSuccess) {
+            setTimeout(() => {
+                setIsWpModalOpen(false);
+                setPushMessage(null);
+
+                setPrompt('The future of renewable energy');
+                setContext('Write a short, optimistic blog post about recent breakthroughs in solar and wind power technology. Mention how these advancements can help combat climate change. The tone should be accessible to a general audience.');
+                setGeneratedContent('');
+            }, 1500);
+        }
     };
 
     return (
@@ -299,6 +341,7 @@ function App() {
                             {generatedContent && <pre
                                 style={{whiteSpace: 'pre-wrap', fontFamily: 'sans-serif'}}>{generatedContent}</pre>}
                         </div>
+
                         <button onClick={() => setIsWpModalOpen(true)} disabled={!generatedContent || isLoading}
                                 style={{...styles.button, ...styles.wpButton, ...((!generatedContent || isLoading) && styles.buttonDisabled)}}>
                             <WordPressIcon/> Push to WordPress

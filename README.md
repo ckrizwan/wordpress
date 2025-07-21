@@ -49,13 +49,27 @@ mysql -u wpuser -p wordpress < /wordpress.sql
 
 ---
 
+### 3. Run Project
+
+#### A. Overall containers
+
+```bash
+docker-compose up -d
+```
+
+#### B. Specific react project
+
+> Go to ai-react project, and install node_modules (npm i) and after start the project (npm start)
+
+---
+
 ## 🌐 Local Endpoints
 
 | Service            | URL                                            |
 |--------------------|-------------------------------------------------|
 | WordPress Frontend | http://localhost:8080                          |
 | WordPress Admin    | http://localhost:8080/wp-admin                |
-| React Frontend     | http://localhost:3000                         |
+| React Frontend     | http://localhost:3001                         |
 
 ### 🧪 WordPress Admin Credentials
 

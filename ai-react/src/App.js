@@ -184,10 +184,7 @@ function App() {
     const [pushMessage, setPushMessage] = useState(null);
 
     const handleGenerate = async () => {
-        if (!apiKey) {
-            setError('Please enter your Gemini API Key.');
-            return;
-        }
+
         if (!prompt) {
             setError('Please enter a blog topic/prompt.');
             return;
@@ -198,9 +195,11 @@ function App() {
         setGeneratedContent('');
 
         try {
+            const geminiApiURL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            const phpBackendURL = 'http://localhost:8080/api.php';
             const fullPrompt = `${context}\n\nWrite a blog post about: ${prompt}`;
             const payload = {contents: [{parts: [{text: fullPrompt}]}]};
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+            const response = await fetch(phpBackendURL, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(payload)
@@ -296,15 +295,7 @@ function App() {
                     <p style={styles.p}> Generate blog content with Google's Gemini API and push it to WordPress. </p>
                 </header>
 
-                <div style={styles.apiKeySection}>
-                    <label htmlFor="apiKey" style={styles.label}> Enter Your Google Gemini API Key </label>
-                    <input id="apiKey" type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)}
-                           placeholder="••••••••••••••••••••••••••••••" style={styles.input}/>
-                    <p style={{...styles.p, fontSize: '0.75rem', marginTop: '8px'}}>Your key is used only for this
-                        session. Get one from <a href="https://aistudio.google.com/app/apikey" target="_blank"
-                                                 rel="noopener noreferrer" style={{color: '#818cf8'}}>Google AI
-                            Studio</a>.</p>
-                </div>
+
 
                 <main style={styles.mainGrid}>
                     <div style={styles.formColumn}>
@@ -319,8 +310,8 @@ function App() {
                             <input id="prompt" type="text" value={prompt} onChange={(e) => setPrompt(e.target.value)}
                                    style={styles.input}/>
                         </div>
-                        <button onClick={handleGenerate} disabled={isLoading || !apiKey}
-                                style={{...styles.button, ...((isLoading || !apiKey) && styles.buttonDisabled)}}>
+                        <button onClick={handleGenerate} disabled={isLoading}
+                                style={{...styles.button, ...((isLoading) && styles.buttonDisabled)}}>
                             {isLoading ? <><Spinner/> Generating...</> : <><SendIcon/> Generate</>}
                         </button>
                         {error && <p style={{

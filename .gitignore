@@ -8,3 +8,5 @@ Thumbs.db
 /ai-react/.env
 
 /php-backend/vendor
+
+.idea
